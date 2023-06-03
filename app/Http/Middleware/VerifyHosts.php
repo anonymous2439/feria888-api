@@ -20,7 +20,6 @@ class VerifyHosts
         // Define the allowed hosts in an array
         $allowedHosts = [
             'feria888.com',
-            'localhost',
         ];
 
         // Check if the request's host is in the allowed hosts array

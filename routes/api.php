@@ -15,12 +15,15 @@ use App\Http\Controllers\UserController;
 |
 */
 
-Route::group(['middleware' => 'verifyhosts'], function () {
+Route::group(['middleware' => ['auth:sanctum']], function () {
     // Define your API routes here
     // Route::get('/user', [UserController::class, 'index']);
-    Route::get('/user/{id}', [UserController::class, 'show']);
+    Route::post('/logout', [UserController::class, 'logout']);
 });
+Route::get('/user/{id}', [UserController::class, 'show']);
+Route::post('/register', [UserController::class, 'register']);
+Route::post('/login', [UserController::class, 'login']);
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
+// Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
+//     return $request->user();
+// });
