@@ -10,26 +10,34 @@ use App\Models\User;
 
 class UserController extends Controller
 {
-    public function show(string $id)
+    public function show()
     {
-        $users = DB::select('select * from users');
+        $users = DB::table('users')
+                    ->join('user_types', 'users.type_id', '=', 'user_types.id')
+                    ->select('users.email', 'user_types.name as type')
+                    ->get();
         return $users;
+    }
+
+    public function getUserInfo(Request $request)
+    {
+        $user = Auth::user();
+        return $user;
     }
     
     public function register(Request $request)
     {
         // Retrieve and validate the input data
         $data = $request->validate([
-            'name' => 'required',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|confirmed',
         ]);
 
         // Create a new user record
         $user = User::create([
-            'name' => $data['name'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
+            'type_id' => 1,
         ]);
 
         $token = $user->createToken('feria888token')->plainTextToken;
@@ -47,8 +55,14 @@ class UserController extends Controller
         $credentials = $request->only('email', 'password');
         
         if (Auth::attempt($credentials)) {
+            $user = Auth::user(); // Retrieve the authenticated user
+            $token = $user->createToken('feria888token')->plainTextToken;
             // Authentication successful
-            return response()->json(['message' => 'Login successful']);
+            return response()->json([
+                'message' => 'Login successful',
+                'user' => $user,
+                'token' => $token
+            ]);
         }
         
         // Authentication failed
@@ -57,9 +71,8 @@ class UserController extends Controller
 
     public function logout(Request $request)
     {
-        auth()->user()->tokens()->delete();
-        return [
-            'message' => 'Logged out'
-        ];
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json(['message' => 'Logout successful']);
     }
 }
