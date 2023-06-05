@@ -15,12 +15,18 @@ use App\Http\Controllers\UserController;
 |
 */
 
+// authenticated routing
 Route::group(['middleware' => ['auth:sanctum']], function () {
+    
     Route::post('/logout', [UserController::class, 'logout']);
     Route::get('/user/get', [UserController::class, 'getUserInfo']);
-
+    Route::post('/user/update', [UserController::class, 'updateUserInfo']);
+    Route::post('/user/changepassword', [UserController::class, 'changePassword']);
+    
+    // protected admin routing
     Route::group(['middleware' => ['user.type']], function () {
-        Route::get('/users', [UserController::class, 'show']);        
+        Route::get('/users', [UserController::class, 'show']);
+        Route::delete('/user/{id}', [UserController::class, 'deleteUser']);
     });
 });
 

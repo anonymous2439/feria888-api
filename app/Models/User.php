@@ -17,10 +17,18 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
+    public function findForPassport($username)
+    {
+        return $this->where('username', $username)->first();
+    }
+    
     protected $fillable = [
+        'id',
         'type_id',
         'email',
         'password',
+        'phone_number',
+        'username',
     ];
 
     /**

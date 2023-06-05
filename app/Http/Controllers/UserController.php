@@ -14,7 +14,7 @@ class UserController extends Controller
     {
         $users = DB::table('users')
                     ->join('user_types', 'users.type_id', '=', 'user_types.id')
-                    ->select('users.email', 'user_types.name as type')
+                    ->select('users.email', 'user_types.name as type', 'users.username', 'users.phone_number', 'users.id')
                     ->get();
         return $users;
     }
@@ -29,14 +29,18 @@ class UserController extends Controller
     {
         // Retrieve and validate the input data
         $data = $request->validate([
+            'username' => 'required|string|unique:users',
             'email' => 'required|email|unique:users',
             'password' => 'required|string|confirmed',
+            'phone_number' => 'required|string',
         ]);
 
         // Create a new user record
         $user = User::create([
+            'username' => $data['username'],
             'email' => $data['email'],
             'password' => bcrypt($data['password']),
+            'phone_number' => $data['phone_number'],
             'type_id' => 1,
         ]);
 
@@ -50,9 +54,62 @@ class UserController extends Controller
         return response()->json($response);
     }
 
+    public function updateUserInfo(Request $request)
+    {
+        $user = Auth::user();
+
+        // Retrieve and validate the input data
+        $data = $request->validate([
+            'email' => 'string',
+            'phone_number' => 'string',
+        ]);
+
+        // Update the user record
+        $user->email = $data['email'] ?? $user->email;
+        $user->phone_number = $data['phone_number'] ?? $user->phone_number;
+        $user->save();
+
+        return response()->json(['message' => 'User information updated', 'user' => $user]);
+    }
+
+    public function changePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        // Validate the input data
+        $data = $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|string|confirmed',
+        ]);
+
+        // Check if the current password matches
+        if (!Hash::check($data['current_password'], $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 400);
+        }
+
+        // Update the password
+        $user->password = bcrypt($data['new_password']);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully']);
+    }
+
+    public function deleteUser(Request $request, $id)
+    {
+        $user = User::find($id);
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $user->delete();
+
+        return response()->json(['message' => 'User deleted successfully']);
+    }
+
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $credentials = $request->only('username', 'password');
         
         if (Auth::attempt($credentials)) {
             $user = Auth::user(); // Retrieve the authenticated user
