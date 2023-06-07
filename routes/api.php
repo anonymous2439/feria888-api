@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserTypeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +27,10 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // protected admin routing
     Route::group(['middleware' => ['user.type']], function () {
         Route::get('/users', [UserController::class, 'show']);
+        Route::get('/user/types', [UserTypeController::class, 'getUserTypes']);
         Route::delete('/user/{id}', [UserController::class, 'deleteUser']);
+        Route::post('/user/add', [UserController::class, 'addUser']);
+        Route::post('/user/edit/{id}', [UserController::class, 'editUser']);
     });
 });
 

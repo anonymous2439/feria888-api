@@ -14,7 +14,7 @@ class UserController extends Controller
     {
         $users = DB::table('users')
                     ->join('user_types', 'users.type_id', '=', 'user_types.id')
-                    ->select('users.email', 'user_types.name as type', 'users.username', 'users.phone_number', 'users.id')
+                    ->select('users.email', 'user_types.name as type', 'user_types.id as type_id', 'users.username', 'users.phone_number', 'users.id')
                     ->get();
         return $users;
     }
@@ -53,6 +53,62 @@ class UserController extends Controller
         // Return a response or redirect as needed
         return response()->json($response);
     }
+
+    public function addUser(Request $request)
+    {
+        // Retrieve and validate the input data
+        $data = $request->validate([
+            'username' => 'required|string|unique:users',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|string|confirmed',
+            'phone_number' => 'required|string',
+            'type_id' => 'required|int',
+        ]);
+
+        // Create a new user record
+        $user = User::create([
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'password' => bcrypt($data['password']),
+            'phone_number' => $data['phone_number'],
+            'type_id' => $data['type_id'],
+        ]);
+
+        $token = $user->createToken('feria888token')->plainTextToken;
+        $response = [
+            'user' => $user,
+            'token' => $token
+        ];
+
+        // Return a response or redirect as needed
+        return response()->json($response);
+    }
+
+    public function editUser(Request $request, $id)
+    {
+        // Retrieve and validate the input data
+        $data = $request->validate([
+            'username' => 'required|string|unique:users,username,'.$id,
+            'email' => 'required|email|unique:users,email,'.$id,
+            'phone_number' => 'required|string',
+            'type_id' => 'required|int',
+        ]);
+
+        // Find the user to be updated
+        $user = User::findOrFail($id);
+
+        // Update the user record
+        $user->update([
+            'username' => $data['username'],
+            'email' => $data['email'],
+            'phone_number' => $data['phone_number'],
+            'type_id' => $data['type_id'],
+        ]);
+
+        // Return the updated user
+        return response()->json(['message' => 'User updated successfully', 'user' => $user]);
+    }
+
 
     public function updateUserInfo(Request $request)
     {
