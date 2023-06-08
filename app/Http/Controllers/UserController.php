@@ -28,32 +28,43 @@ class UserController extends Controller
     
     public function register(Request $request)
     {
-        // Retrieve and validate the input data
-        $data = $request->validate([
-            'username' => 'required|string|unique:users',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|confirmed',
-            'phone_number' => 'required|string',
-        ]);
+        try {
+            // Retrieve and validate the input data
+            $data = $request->validate([
+                'username' => 'required|string|unique:users',
+                'email' => 'required|email|unique:users',
+                'password' => 'required|string|confirmed',
+                'phone_number' => 'required|string',
+            ]);
 
-        // Create a new user record
-        $user = User::create([
-            'username' => $data['username'],
-            'email' => $data['email'],
-            'password' => bcrypt($data['password']),
-            'phone_number' => $data['phone_number'],
-            'type_id' => 1,
-        ]);
+            // Create a new user record
+            $user = User::create([
+                'username' => $data['username'],
+                'email' => $data['email'],
+                'password' => bcrypt($data['password']),
+                'phone_number' => $data['phone_number'],
+                'type_id' => 1,
+            ]);
 
-        $token = $user->createToken('feria888token')->plainTextToken;
-        $response = [
-            'user' => $user,
-            'token' => $token
-        ];
+            $token = $user->createToken('feria888token')->plainTextToken;
+            $response = [
+                'user' => $user,
+                'token' => $token
+            ];
 
-        // Return a response or redirect as needed
-        return response()->json($response);
+            return response()->json([
+                'message' => 'Registration successful',
+                'data' => $response,
+                'success' => 1
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Registration failed',
+                'success' => 0
+            ]);
+        }
     }
+
 
     public function addUser(Request $request)
     {
@@ -174,13 +185,17 @@ class UserController extends Controller
             // Authentication successful
             return response()->json([
                 'message' => 'Login successful',
+                'success' => 1,
                 'user' => $user,
                 'token' => $token
             ]);
         }
         
         // Authentication failed
-        return response()->json(['message' => 'Invalid credentials'], 401);
+        return response()->json([
+            'message' => 'Invalid credentials',
+            'success' => 0
+        ]);
     }
 
     public function logout(Request $request)
