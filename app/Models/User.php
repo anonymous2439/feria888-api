@@ -60,4 +60,9 @@ class User extends Authenticatable
     {
         return $this->hasMany(Wallet::class);
     }
+
+    public function userType()
+    {
+        return $this->belongsTo(UserType::class, 'type_id');
+    }
 }

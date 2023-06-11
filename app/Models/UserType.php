@@ -12,4 +12,9 @@ class UserType extends Model
     protected $fillable = [
         'name',
     ];
+
+    public function wallets()
+    {
+        return $this->hasMany(User::class);
+    }
 }

@@ -22,7 +22,8 @@ class UserController extends Controller
 
     public function getUserInfo(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
+        $user->load('coins', 'userType');
         return $user;
     }
     
@@ -231,7 +232,7 @@ class UserController extends Controller
     // get all user with coins and wallets
     public function getUsersWithCoinsAndWallets()
     {
-        $users = User::with('coins', 'wallets')->get();
+        $users = User::with('coins', 'wallets', 'userType')->get();
 
         return response()->json($users);
     }
