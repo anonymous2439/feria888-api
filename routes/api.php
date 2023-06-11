@@ -4,6 +4,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserTypeController;
+use App\Http\Controllers\CoinsController;
+use App\Http\Controllers\WalletsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,13 +29,16 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // protected admin routing
     Route::group(['middleware' => ['user.type']], function () {
         Route::get('/users', [UserController::class, 'show']);
+        Route::get('/users/all', [UserController::class, 'getUsersWithCoinsAndWallets']);
         Route::get('/user/types', [UserTypeController::class, 'getUserTypes']);
         Route::delete('/user/delete/{id}', [UserController::class, 'deleteUser']);
         Route::post('/user/add', [UserController::class, 'addUser']);
         Route::post('/user/edit/{id}', [UserController::class, 'editUser']);
+        Route::post('/user/changepassword/{id}', [UserController::class, 'changeUserPassword']);
     });
 });
 
 Route::post('/register', [UserController::class, 'register']);
 Route::post('/login', [UserController::class, 'login']);
+
 

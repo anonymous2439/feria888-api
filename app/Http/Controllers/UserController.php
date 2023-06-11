@@ -162,6 +162,29 @@ class UserController extends Controller
         return response()->json(['message' => 'Password changed successfully']);
     }
 
+    public function changeUserPassword(Request $request, $id)
+    {
+        // Find the user to be updated
+        $user = User::findOrFail($id);
+
+        // Validate the input data
+        $data = $request->validate([
+            'current_password' => 'required',
+            'new_password' => 'required|string|confirmed',
+        ]);
+
+        // Check if the current password matches
+        if (!Hash::check($data['current_password'], $user->password)) {
+            return response()->json(['message' => 'Current password is incorrect'], 400);
+        }
+
+        // Update the password
+        $user->password = bcrypt($data['new_password']);
+        $user->save();
+
+        return response()->json(['message' => 'Password changed successfully']);
+    }
+
     public function deleteUser(Request $request, $id)
     {
         $user = User::find($id);
@@ -203,5 +226,13 @@ class UserController extends Controller
         $request->user()->currentAccessToken()->delete();
 
         return response()->json(['message' => 'Logout successful']);
+    }
+
+    // get all user with coins and wallets
+    public function getUsersWithCoinsAndWallets()
+    {
+        $users = User::with('coins', 'wallets')->get();
+
+        return response()->json($users);
     }
 }
