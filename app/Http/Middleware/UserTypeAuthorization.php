@@ -20,7 +20,7 @@ class UserTypeAuthorization
         $user = Auth::user();
 
         // Check if the user is authenticated and has the user type ID equal to 2
-        if (!$user || $user->type_id !== 2) {
+        if (!$user || $user->type_id < 2) {
             abort(403, 'Unauthorized');
         }
 
