@@ -23,7 +23,9 @@ class UserController extends Controller
     public function getUserInfo(Request $request)
     {
         $user = $request->user();
-        $user->load('coins', 'userType');
+        $user->load(['coins' => function ($query) {
+            $query->orderBy('id', 'desc');
+        }, 'userType']);
         return $user;
     }
     
@@ -205,10 +207,12 @@ class UserController extends Controller
         
         if (Auth::attempt($credentials)) {
             $user = Auth::user(); // Retrieve the authenticated user
+            $user->load(['coins' => function ($query) {
+                $query->orderBy('id', 'desc')->first();
+            }, 'userType']);
             $token = $user->createToken('feria888token')->plainTextToken;
             // Authentication successful
             return response()->json([
-                'message' => 'Login successful',
                 'success' => 1,
                 'user' => $user,
                 'token' => $token
@@ -232,7 +236,9 @@ class UserController extends Controller
     // get all user with coins and wallets
     public function getUsersWithCoinsAndWallets()
     {
-        $users = User::with('coins', 'wallets', 'userType')->get();
+        $users = User::with(['coins' => function ($query) {
+            $query->orderBy('id', 'desc');
+        }, 'userType', 'wallets'])->get();
 
         return response()->json($users);
     }

@@ -26,16 +26,22 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/user/update', [UserController::class, 'updateUserInfo']);
     Route::post('/user/changepassword', [UserController::class, 'changePassword']);
     
-    // protected admin routing
-    Route::group(['middleware' => ['user.type']], function () {
+    // protected admin and agent routing
+    Route::group(['middleware' => ['type.allowed:admin,agent']], function () {
         Route::get('/users', [UserController::class, 'show']);
         Route::get('/users/all', [UserController::class, 'getUsersWithCoinsAndWallets']);
         Route::get('/user/types', [UserTypeController::class, 'getUserTypes']);
+    });
+
+    // protected admin routing
+    Route::group(['middleware' => ['type.allowed:admin']], function () {
         Route::delete('/user/delete/{id}', [UserController::class, 'deleteUser']);
         Route::post('/user/add', [UserController::class, 'addUser']);
         Route::post('/user/edit/{id}', [UserController::class, 'editUser']);
         Route::post('/user/changepassword/{id}', [UserController::class, 'changeUserPassword']);
     });
+
+    
 });
 
 Route::post('/register', [UserController::class, 'register']);
