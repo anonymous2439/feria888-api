@@ -4,9 +4,29 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Coin;
+use App\Models\User;
 
 class CoinsController extends Controller
 {
+    public function loadCoins(Request $request) {
+        $user = User::find($request->input('user_id'));
+        $amount = $request->input('amount');
+
+        if (!$user || !$amount) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $latest_coin = $user->coins()->latest()->first();
+        $new_balance = ($latest_coin->coin_balance ?? 0) + $amount;
+
+        $coin = new Coin();
+        $coin->user_id = $user->id;
+        $coin->coin_balance = $new_balance;
+        $coin->save();
+
+        return response()->json($coin, 200);
+    }
+
     public function index()
     {
         $coins = Coin::all();

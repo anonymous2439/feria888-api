@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use App\Models\UserType;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -24,8 +25,24 @@ class UserController extends Controller
     {
         $user = $request->user();
         $user->load(['coins' => function ($query) {
-            $query->orderBy('id', 'desc');
-        }, 'userType']);
+            $query->orderBy('id', 'desc')->first();
+        }, 'wallets' => function ($query) {
+            $query->orderBy('id', 'desc')->first();
+        } ,'userType']);
+        return $user;
+    }
+
+    public function searchUser(Request $request, $search)
+    {
+        $user = User::where(function ($query) use ($search) {
+            $query->where('id', $search)
+                ->orWhere('username', $search);
+        })->first();
+        $user->load(['coins' => function ($query) {
+            $query->latest()->first();
+        }, 'wallets' => function ($query) {
+            $query->latest()->first();
+        } ,'userType']);
         return $user;
     }
     
@@ -40,13 +57,16 @@ class UserController extends Controller
                 'phone_number' => 'required|string',
             ]);
 
+            // Get all user types
+            $userType = UserType::where('name', 'user')->first();
+
             // Create a new user record
             $user = User::create([
                 'username' => $data['username'],
                 'email' => $data['email'],
                 'password' => bcrypt($data['password']),
                 'phone_number' => $data['phone_number'],
-                'type_id' => 1,
+                'type_id' => $userType->id,
             ]);
 
             $token = $user->createToken('feria888token')->plainTextToken;
@@ -209,7 +229,9 @@ class UserController extends Controller
             $user = Auth::user(); // Retrieve the authenticated user
             $user->load(['coins' => function ($query) {
                 $query->orderBy('id', 'desc')->first();
-            }, 'userType']);
+            }, 'wallets' => function ($query) {
+                $query->orderBy('id', 'desc')->first();
+            } ,'userType']);
             $token = $user->createToken('feria888token')->plainTextToken;
             // Authentication successful
             return response()->json([
@@ -237,8 +259,10 @@ class UserController extends Controller
     public function getUsersWithCoinsAndWallets()
     {
         $users = User::with(['coins' => function ($query) {
-            $query->orderBy('id', 'desc');
-        }, 'userType', 'wallets'])->get();
+            $query->latest();
+        }, 'userType', 'wallets' => function ($query) {
+            $query->latest()->first();
+        }])->get();
 
         return response()->json($users);
     }

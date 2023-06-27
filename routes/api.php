@@ -28,9 +28,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     
     // protected admin and agent routing
     Route::group(['middleware' => ['type.allowed:admin,agent']], function () {
-        Route::get('/users', [UserController::class, 'show']);
-        Route::get('/users/all', [UserController::class, 'getUsersWithCoinsAndWallets']);
+        Route::get('/users', [UserController::class, 'show']);        
         Route::get('/user/types', [UserTypeController::class, 'getUserTypes']);
+        Route::get('/user/search/{id}', [UserController::class, 'searchUser']);
     });
 
     // protected admin routing
@@ -39,6 +39,9 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
         Route::post('/user/add', [UserController::class, 'addUser']);
         Route::post('/user/edit/{id}', [UserController::class, 'editUser']);
         Route::post('/user/changepassword/{id}', [UserController::class, 'changeUserPassword']);
+        Route::get('/users/all', [UserController::class, 'getUsersWithCoinsAndWallets']);
+        Route::post('/wallet/load', [WalletsController::class, 'loadWallet']);
+        Route::post('/coins/load', [CoinsController::class, 'loadCoins']);
     });
 
     

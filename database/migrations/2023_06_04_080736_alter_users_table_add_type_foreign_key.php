@@ -11,12 +11,9 @@ class AlterUsersTableAddTypeForeignKey extends Migration
      */
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            // Drop the 'name' column
-            $table->dropColumn('name');
-            
+        Schema::table('users', function (Blueprint $table) {            
             // Add the 'type' column as a foreign key
-            $table->unsignedBigInteger('type_id');
+            // $table->unsignedBigInteger('type_id');
             $table->foreign('type_id')
                   ->references('id')
                   ->on('user_types')
@@ -32,9 +29,6 @@ class AlterUsersTableAddTypeForeignKey extends Migration
         Schema::table('users', function (Blueprint $table) {
             // Drop the foreign key constraint
             $table->dropForeign(['type_id']);
-            
-            // Recreate the 'name' column
-            $table->string('name');
         });
     }
 }
