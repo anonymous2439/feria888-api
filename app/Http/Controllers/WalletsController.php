@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Wallet;
 use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 
 class WalletsController extends Controller
 {
@@ -17,7 +18,13 @@ class WalletsController extends Controller
         }
 
         $latest_wallet = $user->wallets()->latest()->first();
-        $new_balance = ($latest_wallet->wallet_balance ?? 0) + $request->input('amount');
+        $amount = $request->input('amount');
+
+        // validates to accept only amount greater than 0
+        if ($amount <= 0) {
+            return response()->json(['message' => 'Amount must be greater than 0'], 200);
+        }
+        $new_balance = ($latest_wallet->wallet_balance ?? 0) + $amount;
 
         $wallet = new Wallet();
         $wallet->user_id = $user->id;
@@ -25,6 +32,35 @@ class WalletsController extends Controller
         $wallet->save();
 
         return response()->json($wallet, 200);
+    }
+
+    public function deductWallet(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user) {
+            return response()->json(['message' => 'User not found'], 404);
+        }
+
+        $latest_wallet = $user->wallets()->latest()->first();
+        $amount = $request->input('amount');
+
+        // validates to accept only amount greater than 0
+        if ($amount <= 0) {
+            return response()->json(['message' => 'Amount must be greater than 0', 'success' => 0], 200);
+        }
+        $new_balance = ($latest_wallet->wallet_balance ?? 0) - $amount;
+
+        if ($new_balance < 0) {
+            return response()->json(['message' => 'Not enough wallet balance', 'success' => 0], 200);
+        }
+
+        $wallet = new Wallet();
+        $wallet->user_id = $user->id;
+        $wallet->wallet_balance = $new_balance;
+        $wallet->save();
+
+        return response()->json(['wallet' => $wallet, 'success' => 1], 200);
     }
 
     public function index()

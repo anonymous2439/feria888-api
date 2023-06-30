@@ -27,20 +27,22 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/user/changepassword', [UserController::class, 'changePassword']);
     
     // protected admin and agent routing
-    Route::group(['middleware' => ['type.allowed:admin,agent']], function () {
-        Route::get('/users', [UserController::class, 'show']);        
-        Route::get('/user/types', [UserTypeController::class, 'getUserTypes']);
+    Route::group(['middleware' => ['type.allowed:admin,agent']], function () {        
         Route::get('/user/search/{id}', [UserController::class, 'searchUser']);
     });
 
     // protected admin routing
     Route::group(['middleware' => ['type.allowed:admin']], function () {
+        Route::get('/users', [UserController::class, 'show']);        
+        Route::get('/user/types', [UserTypeController::class, 'getUserTypes']);
         Route::delete('/user/delete/{id}', [UserController::class, 'deleteUser']);
         Route::post('/user/add', [UserController::class, 'addUser']);
         Route::post('/user/edit/{id}', [UserController::class, 'editUser']);
         Route::post('/user/changepassword/{id}', [UserController::class, 'changeUserPassword']);
         Route::get('/users/all', [UserController::class, 'getUsersWithCoinsAndWallets']);
+        Route::get('/agents/all', [UserController::class, 'getAgents']);
         Route::post('/wallet/load', [WalletsController::class, 'loadWallet']);
+        Route::post('/wallet/deduct', [WalletsController::class, 'deductWallet']);
         Route::post('/coins/load', [CoinsController::class, 'loadCoins']);
     });
 

@@ -23,11 +23,11 @@ class UserController extends Controller
 
     public function getUserInfo(Request $request)
     {
-        $user = $request->user();
+        $user = Auth::user();
         $user->load(['coins' => function ($query) {
-            $query->orderBy('id', 'desc')->first();
+            $query->latest()->first();
         }, 'wallets' => function ($query) {
-            $query->orderBy('id', 'desc')->first();
+            $query->latest()->first();
         } ,'userType']);
         return $user;
     }
@@ -228,9 +228,9 @@ class UserController extends Controller
         if (Auth::attempt($credentials)) {
             $user = Auth::user(); // Retrieve the authenticated user
             $user->load(['coins' => function ($query) {
-                $query->orderBy('id', 'desc')->first();
+                $query->latest()->first();
             }, 'wallets' => function ($query) {
-                $query->orderBy('id', 'desc')->first();
+                $query->latest()->first();
             } ,'userType']);
             $token = $user->createToken('feria888token')->plainTextToken;
             // Authentication successful
@@ -263,6 +263,20 @@ class UserController extends Controller
         }, 'userType', 'wallets' => function ($query) {
             $query->latest()->first();
         }])->get();
+
+        return response()->json($users);
+    }
+
+    // get all agents
+    public function getAgents()
+    {
+        $users = User::with(['coins' => function ($query) {
+            $query->latest()->first();
+        }, 'userType', 'wallets' => function ($query) {
+            $query->latest()->first();
+        }])->whereHas('userType', function ($query) {
+            $query->where('name', 'agent');
+        })->get();
 
         return response()->json($users);
     }
