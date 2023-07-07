@@ -8,6 +8,7 @@ use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\UserType;
+use App\Models\Agent;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
@@ -88,7 +89,6 @@ class UserController extends Controller
         }
     }
 
-
     public function addUser(Request $request)
     {
         // Retrieve and validate the input data
@@ -109,6 +109,14 @@ class UserController extends Controller
             'type_id' => $data['type_id'],
         ]);
 
+        if ($user->userType->name === 'agent') {
+            // Store a new row for the Agent model
+            Agent::firstOrCreate(
+                ['user_id' => $user->id],
+                ['status' => 'offline', 'link' => '']
+            );
+        }
+
         $token = $user->createToken('feria888token')->plainTextToken;
         $response = [
             'user' => $user,
@@ -118,6 +126,7 @@ class UserController extends Controller
         // Return a response or redirect as needed
         return response()->json($response);
     }
+
 
     public function editUser(Request $request, $id)
     {
@@ -139,6 +148,14 @@ class UserController extends Controller
             'phone_number' => $data['phone_number'],
             'type_id' => $data['type_id'],
         ]);
+
+        if ($user->userType->name === 'agent') {
+            // Store a new row for the Agent model
+            Agent::firstOrCreate(
+                ['user_id' => $user->id],
+                ['status' => 'offline', 'link' => '']
+            );
+        }
 
         // Return the updated user
         return response()->json(['message' => 'User updated successfully', 'user' => $user]);
