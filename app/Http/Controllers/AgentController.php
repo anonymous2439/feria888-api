@@ -16,35 +16,48 @@ class AgentController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
 
+    public function changeStatus()
+    {
+        $user = Auth::user(); // Retrieve the authenticated user
+        $agent = $user->agent;
+        if($agent->status == 'offline')
+            $agent->status = 'online';
+        else
+            $agent->status = 'offline';
+
+        $agent->save();
+
+        return response()->json([
+            'agent' => $agent,
+        ]);
+    }
+
     public function getAllOnlineAgents()
     {
-        $agents = Agent::whereHas('user', function ($query) {
-            $query->where('userTypes.name', 'agent');
-        })->where('status', 'online')->get();
+        $agents = Agent::where('status', 'online')->with('user')->get();
 
         return response()->json([
             'agents' => $agents,
         ]);
     }
 
-     public function getAgentInfo(Request $request)
-     {
+    public function getAgentInfo(Request $request)
+    {
         $user = Auth::user(); // Retrieve the authenticated user
- 
-        if ($user->userType && $user->userType->name === 'agent') {
-            $agent = Agent::where('user_id', $user->id)->first();
+        $agent = $user->agent;
 
-            if ($agent) {
-                return response()->json([
-                    'agent' => $agent,
-                ]);
-            }
+        if ($agent) {
+            return $agent;
         }
-
-        return response()->json([
-            'message' => 'Agent not found',
-        ], 404);
-     }
+        else {
+            $agent = new Agent();
+            $agent->user_id = $user->id;
+            $agent->status = 'offline';
+            $agent->link = '';
+            $agent->save();
+            return $agent;
+        }
+    }
      
     public function storeOrUpdateAgent()
     {

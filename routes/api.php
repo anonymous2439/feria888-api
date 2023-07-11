@@ -26,17 +26,17 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::get('/user/get', [UserController::class, 'getUserInfo']);
     Route::post('/user/update', [UserController::class, 'updateUserInfo']);
     Route::post('/user/changepassword', [UserController::class, 'changePassword']);
-    Route::get('/agent/online', [AgentController::class, 'getAllOnlineAgents']);
+    Route::get('/agents/online', [AgentController::class, 'getAllOnlineAgents']);
     
     // protected admin and agent routing
-    Route::group(['middleware' => ['type.allowed:admin,agent']], function () {        
+    Route::group(['middleware' => ['type.allowed:root,admin,agent']], function () {        
         Route::get('/user/search/{id}', [UserController::class, 'searchUser']);
         Route::post('/wallet/deduct', [WalletsController::class, 'deductWallet']);
         Route::post('/coins/load', [CoinsController::class, 'loadCoins']);
     });
 
     // protected admin routing
-    Route::group(['middleware' => ['type.allowed:admin']], function () {
+    Route::group(['middleware' => ['type.allowed:root,admin']], function () {
         Route::get('/users', [UserController::class, 'show']);        
         Route::get('/user/types', [UserTypeController::class, 'getUserTypes']);
         Route::delete('/user/delete/{id}', [UserController::class, 'deleteUser']);
@@ -52,6 +52,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     // protected agent routing
     Route::group(['middleware' => ['type.allowed:agent']], function () {        
         Route::get('/agent/info', [AgentController::class, 'getAgentInfo']);
+        Route::get('/agent/status/change', [AgentController::class, 'changeStatus']);
     });
 
     

@@ -177,6 +177,12 @@ class UserController extends Controller
         $user->phone_number = $data['phone_number'] ?? $user->phone_number;
         $user->save();
 
+        $user->load(['coins' => function ($query) {
+            $query->latest()->first();
+        }, 'wallets' => function ($query) {
+            $query->latest()->first();
+        } ,'userType']);
+
         return response()->json(['message' => 'User information updated', 'user' => $user]);
     }
 
@@ -229,11 +235,14 @@ class UserController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user) {
+        if ($user && $user->userType->name != 'root') {
+            $user->delete();            
+        }
+        else {
             return response()->json(['message' => 'User not found'], 404);
         }
 
-        $user->delete();
+        
 
         return response()->json(['message' => 'User deleted successfully']);
     }
