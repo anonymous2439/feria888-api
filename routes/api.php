@@ -7,6 +7,7 @@ use App\Http\Controllers\UserTypeController;
 use App\Http\Controllers\CoinsController;
 use App\Http\Controllers\WalletsController;
 use App\Http\Controllers\AgentController;
+use App\Http\Controllers\TransactionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,6 +28,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::post('/user/update', [UserController::class, 'updateUserInfo']);
     Route::post('/user/changepassword', [UserController::class, 'changePassword']);
     Route::get('/agents/online', [AgentController::class, 'getAllOnlineAgents']);
+    Route::get('/transactions/get', [TransactionController::class, 'getUserTransactions']);
     
     // protected admin and agent routing
     Route::group(['middleware' => ['type.allowed:root,admin,agent']], function () {        
@@ -53,6 +55,7 @@ Route::group(['middleware' => ['auth:sanctum']], function () {
     Route::group(['middleware' => ['type.allowed:agent']], function () {        
         Route::get('/agent/info', [AgentController::class, 'getAgentInfo']);
         Route::get('/agent/status/change', [AgentController::class, 'changeStatus']);
+        Route::get('/agent/link/update', [AgentController::class, 'updateLink']);
     });
 
     

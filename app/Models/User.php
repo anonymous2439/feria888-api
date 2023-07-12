@@ -70,4 +70,21 @@ class User extends Authenticatable
     {
         return $this->hasOne(Agent::class);
     }
+    
+    public function sentTransactions()
+    {
+        return $this->hasMany(Transaction::class, 'from');
+    }
+
+    public function receivedTransactions()
+    {
+        return $this->hasMany(Transaction::class, 'to');
+    }
+
+    public function allTransactions()
+    {
+        return $this->sentTransactions()->union($this->receivedTransactions());
+    }
+
+
 }

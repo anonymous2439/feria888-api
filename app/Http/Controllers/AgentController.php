@@ -32,6 +32,21 @@ class AgentController extends Controller
         ]);
     }
 
+    public function updateLink()
+    {
+        $user = Auth::user(); // Retrieve the authenticated user
+        $agent = $user->agent;
+        $data = $request->validate([
+            'agent_link' => 'required',
+        ]);
+        $agent->link = $data['agent_link'];
+        $agent->save();
+
+        return response()->json([
+            'agent' => $agent,
+        ]);
+    }
+
     public function getAllOnlineAgents()
     {
         $agents = Agent::where('status', 'online')->with('user')->get();

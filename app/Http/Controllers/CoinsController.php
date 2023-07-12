@@ -5,10 +5,13 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Coin;
 use App\Models\User;
+use App\Models\Transaction;
+use Illuminate\Support\Facades\Auth;
 
 class CoinsController extends Controller
 {
     public function loadCoins(Request $request) {
+        $from = Auth::user();
         $user = User::find($request->input('user_id'));
         $amount = $request->input('amount');
 
@@ -23,6 +26,14 @@ class CoinsController extends Controller
         $coin->user_id = $user->id;
         $coin->coin_balance = $new_balance;
         $coin->save();
+
+        // save the transaction log
+        $transaction = new Transaction();
+        $transaction->from = $from->id; 
+        $transaction->to = $user->id; 
+        $transaction->type = 'wallet_to_coins'; 
+        $transaction->amount = $amount; 
+        $transaction->save();
 
         return response()->json($coin, 200);
     }

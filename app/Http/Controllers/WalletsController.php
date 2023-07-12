@@ -5,12 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Wallet;
 use App\Models\User;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Auth;
 
 class WalletsController extends Controller
 {
     public function loadWallet(Request $request)
     {
+        $from = Auth::user();
         $user = User::find($request->input('user_id'));
 
         if (!$user) {
@@ -30,6 +32,14 @@ class WalletsController extends Controller
         $wallet->user_id = $user->id;
         $wallet->wallet_balance = $new_balance;
         $wallet->save();
+
+        // save the transaction log
+        $transaction = new Transaction();
+        $transaction->from = $from->id; 
+        $transaction->to = $user->id; 
+        $transaction->type = 'wallet_load'; 
+        $transaction->amount = $amount; 
+        $transaction->save();
 
         return response()->json($wallet, 200);
     }
