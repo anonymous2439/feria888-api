@@ -298,7 +298,7 @@ class UserController extends Controller
     {
         $users = User::with(['coins' => function ($query) {
             $query->latest()->first();
-        }, 'userType', 'wallets' => function ($query) {
+        }, 'agent', 'userType', 'wallets' => function ($query) {
             $query->latest()->first();
         }])->whereHas('userType', function ($query) {
             $query->where('name', 'agent');
